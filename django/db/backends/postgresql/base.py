@@ -190,6 +190,13 @@ class DatabaseWrapper(BaseDatabaseWrapper):
             if self.isolation_level != connection.isolation_level:
                 connection.set_session(isolation_level=self.isolation_level)
 
+        import logging
+        import os
+        logger = logging.getLogger('gba_db_connection_debug')
+        logger.debug(
+            "(PID: %s) Opened a connection (%s)" % (os.getpid(), id(connection))
+        )
+
         return connection
 
     def ensure_timezone(self):

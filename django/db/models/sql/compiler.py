@@ -865,6 +865,11 @@ class SQLCompiler(object):
         is needed, as the filters describe an empty set. In that case, None is
         returned, to avoid any unnecessary database interaction.
         """
+        import logging
+        import os
+        import traceback
+        logger = logging.getLogger('gba_db_connection_debug')
+
         if not result_type:
             result_type = NO_RESULTS
         try:
@@ -880,9 +885,18 @@ class SQLCompiler(object):
             cursor = self.connection.chunked_cursor()
         else:
             cursor = self.connection.cursor()
+
+        logger.debug(
+            "(PID: %s) new cursor (%s) created with connection (%s)" % (os.getpid(), id(cursor), id(self.connection))
+        )
+
         try:
             cursor.execute(sql, params)
         except Exception as original_exception:
+            logger.debug(
+                "(PID: %s) Error in the connection/cursor (%s/%s):\n\n%s" % (os.getpid(), id(self.connection),
+                                                                             id(cursor), traceback.format_exc)
+            )
             try:
                 # Might fail for server-side cursors (e.g. connection closed)
                 cursor.close()
